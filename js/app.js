@@ -1,95 +1,109 @@
+
+import { getUnits, getConversion } from "./api.js";
+
 document.addEventListener("DOMContentLoaded", async () => {
- 
-    // STATE OBJECT
-    const state = {
-        type: "Length",
-        action: "Conversion",
-        fromVal: null,
-        fromUnit: "",
-        toVal: null,
-        toUnit: "",
-        operator: "+"
-    };
- 
-    // INITIAL CALLS
+
     attachEventListeners();
     await loadUnits("Length");
-    toggleOperators(false);
-    loadHistory();
- 
 });
+
+// ---------------- EVENTS ----------------
+
 function attachEventListeners() {
- 
+
     // TYPE CHANGE
     const typeRadios = document.querySelectorAll('input[name="type"]');
- 
+
     typeRadios.forEach(radio => {
         radio.addEventListener("change", async (e) => {
-            const selectedType = e.target.id;
-            await loadUnits(capitalize(selectedType));
+            const selectedType = capitalize(e.target.id);
+            await loadUnits(selectedType);
         });
     });
- 
-    // ACTION CHANGE
-    const actionRadios = document.querySelectorAll('input[name="action"]');
- 
-    actionRadios.forEach(radio => {
-        radio.addEventListener("change", (e) => {
-            const action = e.target.id;
- 
-            if (action === "arithmetic") {
-                toggleOperators(true);
-            } else {
-                toggleOperators(false);
-            }
-        });
+
+    // INPUT CHANGE
+    const inputs = document.querySelectorAll(".box input");
+    const selects = document.querySelectorAll(".box select");
+
+    inputs.forEach(input => {
+        input.addEventListener("input", performConversion);
+    });
+
+    selects.forEach(select => {
+        select.addEventListener("change", performConversion);
     });
 }
+
+// ---------------- LOAD UNITS ----------------
+
 async function loadUnits(type) {
     try {
-        const res = await fetch("http://localhost:3000/units");
-        const data = await res.json();
- 
-        const filtered = data.filter(u => u.type === type);
- 
+        const data = await getUnits(type);
+
         const selects = document.querySelectorAll(".box select");
- 
+
         selects.forEach(select => {
             select.innerHTML = "";
- 
-            filtered.forEach(unit => {
+
+            data.forEach(unit => {
                 const option = document.createElement("option");
                 option.value = unit.symbol;
                 option.textContent = unit.label;
                 select.appendChild(option);
             });
         });
- 
+
+        performConversion();
+
     } catch (error) {
         alert("Server unavailable");
         console.error(error);
     }
 }
-function toggleOperators(show) {
-    const operatorRow = document.getElementById("operator-row");
- 
-    if (!operatorRow) return;
- 
-    operatorRow.style.display = show ? "flex" : "none";
-}
-async function loadHistory() {
+
+// ---------------- CONVERSION ----------------
+
+async function performConversion() {
     try {
-        const res = await fetch("http://localhost:3000/history");
-        const history = await res.json();
- 
-        console.log("History:", history);
- 
-        // Later you will render it in UI
- 
+        const inputs = document.querySelectorAll(".box input");
+        const selects = document.querySelectorAll(".box select");
+
+        const fromVal = parseFloat(inputs[0].value);
+        const fromUnit = selects[0].value;
+        const toUnit = selects[1].value;
+
+        if (!fromVal && fromVal !== 0) return;
+
+        // SAME UNIT
+        if (fromUnit === toUnit) {
+            inputs[1].value = fromVal;
+            return;
+        }
+
+        const conversion = await getConversion(fromUnit, toUnit);
+
+        let result;
+
+        // FACTOR
+        if (conversion.factor !== null) {
+            result = fromVal * conversion.factor;
+        }
+        // FORMULA
+        else if (conversion.formula) {
+            const x = fromVal;
+            result = Function("x", `return ${conversion.formula}`)(x);
+        }
+
+        inputs[1].value = result;
+
     } catch (error) {
-        console.error("Error loading history", error);
+        alert("Conversion not available for this pair");
+        console.error(error);
     }
 }
+
+// ---------------- HELPERS ----------------
+
 function capitalize(text) {
     return text.charAt(0).toUpperCase() + text.slice(1);
 }
