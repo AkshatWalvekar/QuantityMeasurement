@@ -82,14 +82,17 @@ input:checked + .action-btn {
 .input-section {
     display: flex;
     gap: 30px;
+    align-items: stretch;
 }
 
 .box {
     flex: 1;
     border: 1px solid #ddd;
     border-radius: 6px;
-    overflow: hidden;
+    overflow: visible;
     background: #fafafa;
+    display: flex;
+    flex-direction: column;
 }
 
 .box input {
@@ -122,4 +125,25 @@ input:checked + .action-btn {
     margin-bottom: 10px;
     color: #333;
     letter-spacing: 1px;
+}
+
+#history-container {
+    margin-top: 30px;
+}
+
+#history-list {
+    list-style: none;
+    padding: 0;
+}
+
+#history-list li {
+    background: #f1f3f6;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+#no-history {
+    color: #888;
 }

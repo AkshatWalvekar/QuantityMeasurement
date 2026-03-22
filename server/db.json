@@ -331,6 +331,30 @@
       "expression": "1 km → m",
       "result": 1000,
       "timestamp": "2026-03-22T09:31:39.390Z"
+    },
+    {
+      "id": "a0b2",
+      "type": "Length",
+      "action": "Conversion",
+      "expression": "2 km → km",
+      "result": 2,
+      "timestamp": "2026-03-22T09:51:09.721Z"
+    },
+    {
+      "id": "6d3c",
+      "type": "Length",
+      "action": "Conversion",
+      "expression": "1 m → km",
+      "result": 0.001,
+      "timestamp": "2026-03-22T10:00:09.684Z"
+    },
+    {
+      "id": "a3ca",
+      "type": "Length",
+      "action": "Conversion",
+      "expression": "10 km → km",
+      "result": 10,
+      "timestamp": "2026-03-22T10:03:44.835Z"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

@@ -1,4 +1,4 @@
-import { getUnits, getConversion, saveHistory } from "./api.js";
+import { getUnits, getConversion, saveHistory, getHistory } from "./api.js";
 
 let currentType = "Length";
 let lastSaved = "";
@@ -6,6 +6,7 @@ let lastSaved = "";
 document.addEventListener("DOMContentLoaded", async () => {
     attachEventListeners();
     await loadUnits(currentType);
+    await loadHistory();
 });
 
 // EVENTS
@@ -19,7 +20,6 @@ function attachEventListeners() {
 
             await loadUnits(currentType);
 
-            // keep selected radio
             setSelectedType(currentType);
 
             const inputs = document.querySelectorAll(".box input");
@@ -39,10 +39,8 @@ function attachEventListeners() {
 
     const inputs = document.querySelectorAll(".box input");
 
-    // FROM input → conversion + save
     inputs[0].addEventListener("input", performConversion);
 
-    // SELECT change → conversion only
     document.querySelectorAll(".box select").forEach(s => {
         s.addEventListener("change", performConversion);
     });
@@ -65,7 +63,6 @@ async function loadUnits(type) {
         });
     });
 
-    // keep correct radio selected
     setSelectedType(type);
 }
 
@@ -98,7 +95,6 @@ async function performConversion() {
 
         inputs[1].value = result;
 
-        // prevent duplicate save
         const key = `${value}-${from}-${to}-${result}`;
         if (key === lastSaved) return;
 
@@ -112,18 +108,50 @@ async function performConversion() {
             timestamp: new Date().toISOString()
         });
 
+        loadHistory(); // refresh UI
+
     } catch (err) {
         console.error(err);
     }
 }
 
-// HELPER: keep radio selected
+// LOAD HISTORY
+async function loadHistory() {
+    try{
+    const history = await getHistory();
+
+    console.log("History:",history);
+
+    const list = document.getElementById("history-list");
+    const empty = document.getElementById("no-history");
+
+    if(!list||!empty)return;
+
+    list.innerHTML = "";
+
+    if (!history.length) {
+        empty.style.display = "block";
+        return;
+    }
+
+    empty.style.display = "none";
+
+    history.reverse().forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = `${item.expression} = ${item.result}`;
+        list.appendChild(li);
+    });
+}catch(err){
+    console.error("Load History Error;",err);
+}
+}
+
+// HELPERS
 function setSelectedType(type) {
     const radio = document.getElementById(type.toLowerCase());
     if (radio) radio.checked = true;
 }
 
-// HELPER
 function capitalize(t) {
     return t.charAt(0).toUpperCase() + t.slice(1);
 }

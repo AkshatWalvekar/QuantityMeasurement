@@ -29,7 +29,19 @@ export async function saveHistory(record) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(record)
         });
-    } catch (err) {
-        console.error("Save history failed");
+    } catch {
+        console.error("Save failed");
+    }
+}
+
+// UC6
+export async function getHistory() {
+    try {
+        const res = await fetch("http://localhost:3000/history");
+        return await res.json();
+
+    } catch (err){
+        console.error("History Fetch failed",err);
+        return [];
     }
 }
