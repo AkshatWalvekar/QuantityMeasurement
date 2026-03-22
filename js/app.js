@@ -2,6 +2,7 @@ import { compareValues } from "./tempcomparison.js";
 import { convertValue } from "./conversion.js";
 import { getUnits, saveHistory, getHistory } from "./api.js";
 import { performArithmetic } from "./arithmetic.js";
+import { populateDropdown } from "./ui.js";
 
 let isUserTyping = false;
 let currentType = "Length";
@@ -13,7 +14,7 @@ let isLoadingUnits = false;
 document.addEventListener("DOMContentLoaded", async () => {
     attachEventListeners();
     await loadUnits(currentType);
-    loadHistory();
+    await loadHistory();
 });
 
 // EVENTS
@@ -88,16 +89,15 @@ async function loadUnits(type) {
 
     const selects = document.querySelectorAll(".box select");
 
-    selects.forEach(select => {
-        select.innerHTML = "";
+    // use UI module
+    populateDropdown(selects[0], units);
+    populateDropdown(selects[1], units);
 
-        units.forEach(unit => {
-            const option = document.createElement("option");
-            option.value = unit.symbol;
-            option.textContent = unit.label;
-            select.appendChild(option);
-        });
-    });
+    // OPTIONAL: set default selections (better UX)
+    if (units.length >= 2) {
+        selects[0].selectedIndex = 1; // first real unit
+        selects[1].selectedIndex = 2; // second real unit
+    }
 
     isLoadingUnits = false;
 }
@@ -224,9 +224,15 @@ function capitalize(text) {
 async function loadHistory() {
 
     const container = document.getElementById("historyContainer");
-    if (!container) return;
+
+    if (!container) {
+        console.error("historyContainer NOT FOUND ❌");
+        return;
+    }
 
     const history = await getHistory();
+
+    console.log("History Loaded:", history); // DEBUG
 
     if (!history || history.length === 0) {
         container.innerHTML = "<p>No history yet.</p>";
@@ -236,9 +242,11 @@ async function loadHistory() {
     container.innerHTML = "";
 
     history.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "history-item";
-        div.textContent = `${item.expression} = ${item.result}`;
-        container.appendChild(div);
-    });
+    const div = document.createElement("div");
+    div.className = "history-item";
+
+    div.textContent = `${item.expression} = ${item.result}`;
+
+    container.appendChild(div);
+});
 }
