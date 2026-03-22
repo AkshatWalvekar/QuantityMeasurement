@@ -392,6 +392,54 @@
       "expression": "2 ton * 1000 kg",
       "result": 2,
       "timestamp": "2026-03-22T13:57:24.103Z"
+    },
+    {
+      "id": "f124",
+      "type": "Length",
+      "action": "Arithmetic",
+      "expression": "10 km + 1 m",
+      "result": 10.001,
+      "timestamp": "2026-03-22T18:24:20.540Z"
+    },
+    {
+      "id": "60d3",
+      "type": "Length",
+      "action": "Comparison",
+      "expression": "10 km vs 1 m",
+      "result": "10 km is GREATER than 1 m",
+      "timestamp": "2026-03-22T18:24:30.318Z"
+    },
+    {
+      "id": "419b",
+      "type": "Length",
+      "action": "Comparison",
+      "expression": "12 km vs 2 m",
+      "result": "12 km is GREATER than 2 m",
+      "timestamp": "2026-03-22T18:24:32.805Z"
+    },
+    {
+      "id": "eb5d",
+      "type": "Length",
+      "action": "Comparison",
+      "expression": "12 km vs 21 m",
+      "result": "12 km is GREATER than 21 m",
+      "timestamp": "2026-03-22T18:24:32.932Z"
+    },
+    {
+      "id": "71f8",
+      "type": "Length",
+      "action": "Arithmetic",
+      "expression": "15 km + 1 m",
+      "result": 15.001,
+      "timestamp": "2026-03-22T18:24:43.385Z"
+    },
+    {
+      "id": "d26b",
+      "type": "Length",
+      "action": "Arithmetic",
+      "expression": "12 km + 2 m",
+      "result": 12.002,
+      "timestamp": "2026-03-22T18:25:32.418Z"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

@@ -29,11 +29,13 @@ function attachEventListeners() {
     fromInput.addEventListener("input", () => {
         isUserTyping = true;
         lastValue = fromInput.value;
-        handleConversion();
+        //handleConversion();
+        calculate();
     });
 
     toInput.addEventListener("input", () => {
-        handleConversion();
+        //handleConversion();
+        calculate();
     });
 
     const typeRadios = document.querySelectorAll('input[name="type"]');
@@ -255,7 +257,127 @@ async function handleConversion() {
         isUserTyping = false;
     }
 }
+async function calculate() {
 
+    try {
+
+        const fromInput = document.querySelectorAll(".box input")[0];
+        const toInput = document.querySelectorAll(".box input")[1];
+
+        const fromSelect = document.querySelectorAll(".box select")[0];
+        const toSelect = document.querySelectorAll(".box select")[1];
+
+        const selectedAction = document.querySelector('input[name="action"]:checked').id;
+        const selectedType = capitalize(document.querySelector('input[name="type"]:checked').id);
+
+        const fromUnit = fromSelect.value;
+        const toUnit = toSelect.value;
+
+        const v1 = parseFloat(fromInput.value);
+        const v2 = parseFloat(toInput.value);
+
+        // Missing inputs → stop
+        if (!fromUnit || !toUnit) return;
+
+        
+        if (selectedAction === "conversion") {
+
+            if (!Number.isFinite(v1)) return;
+
+            const result = await convertValue(v1, fromUnit, toUnit);
+
+            if (result === null) return;
+
+            const finalResult = parseFloat(result.toFixed(4));
+
+            showResult(finalResult, toUnit);
+
+            const record = {
+                type: selectedType,
+                action: "Conversion",
+                expression: `${v1} ${fromUnit} → ${toUnit}`,
+                result: finalResult,
+                timestamp: new Date().toISOString()
+            };
+
+            await saveHistory(record);
+            loadHistory();
+
+            return;
+        }
+
+        
+        if (selectedAction === "comparison") {
+
+            if (!Number.isFinite(v1) || !Number.isFinite(v2)) return;
+
+            const baseUnitMap = {
+                Length: "m",
+                Weight: "kg",
+                Temperature: "C",
+                Volume: "L"
+            };
+
+            const baseUnit = baseUnitMap[selectedType];
+
+            const base1 = await convertValue(v1, fromUnit, baseUnit);
+            const base2 = await convertValue(v2, toUnit, baseUnit);
+
+            const result = compareValues(v1, fromUnit, v2, toUnit, base1, base2);
+
+            showResult(result, "");
+
+            const record = {
+                type: selectedType,
+                action: "Comparison",
+                expression: `${v1} ${fromUnit} vs ${v2} ${toUnit}`,
+                result: result,
+                timestamp: new Date().toISOString()
+            };
+
+            await saveHistory(record);
+            loadHistory();
+
+            return;
+        }
+
+       
+        if (selectedAction === "arithmetic") {
+
+            if (!Number.isFinite(v1) || !Number.isFinite(v2)) return;
+
+            const activeOp = document.querySelector(".op-btn.active");
+            const operator = activeOp ? activeOp.textContent : "+";
+
+            const v2normalised = await convertValue(v2, toUnit, fromUnit);
+
+            const result = performArithmetic(v1, v2normalised, operator);
+
+            const finalExp = `${v1} ${fromUnit} ${operator} ${v2} ${toUnit}`;
+
+            showResult(`${finalExp} = ${result}`, fromUnit);
+
+            const record = {
+                type: selectedType,
+                action: "Arithmetic",
+                expression: finalExp,
+                result: result,
+                timestamp: new Date().toISOString()
+            };
+
+            await saveHistory(record);
+            loadHistory();
+
+            return;
+        }
+
+    } catch (e) {
+
+        console.error("Calculation Error:", e);
+        showResult("Error: " + e.message, "");
+
+    }
+}
 // HELPER
 function capitalize(text) {
     return text.charAt(0).toUpperCase() + text.slice(1);
@@ -264,33 +386,28 @@ function capitalize(text) {
 // HISTORY
 async function loadHistory() {
 
-    const container = document.getElementById("historyContainer");
+    const list = document.getElementById("history-list");
 
-    if (!container) {
-        console.error("historyContainer NOT FOUND ❌");
+    if (!list) {
+        console.error("history-list NOT FOUND ❌");
         return;
     }
 
     const history = await getHistory();
 
-    console.log("History Loaded:", history); // DEBUG
-
     if (!history || history.length === 0) {
-        container.innerHTML = "<p>No history yet.</p>";
+        list.innerHTML = "<li>No history yet.</li>";
         return;
     }
 
-    container.innerHTML = "";
+    list.innerHTML = "";
 
     history.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "history-item";
+        const li = document.createElement("li");
 
-       div.innerHTML = `
-            <strong>${item.expression}</strong><br>
-            Result: ${item.result}
-        `;
+        li.textContent =
+            `${item.expression} = ${item.result} (${new Date(item.timestamp).toLocaleString()})`;
 
-        container.appendChild(div);
+        list.appendChild(li);
     });
 }
