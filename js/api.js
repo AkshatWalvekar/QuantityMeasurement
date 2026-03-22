@@ -53,6 +53,8 @@ export async function getConversion(from, to) {
 }
 export async function saveHistory(record) {
     try {
+        console.log("Saving history:", record);
+
         const res = await fetch(`${BASE_URL}/history`, {
             method: "POST",
             headers: {
@@ -61,11 +63,8 @@ export async function saveHistory(record) {
             body: JSON.stringify(record)
         });
 
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status}`);
-        }
-
         return await res.json();
+
     } catch (error) {
         console.error("Failed to save history:", error);
     }

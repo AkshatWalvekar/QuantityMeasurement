@@ -40,15 +40,15 @@ function attachEventListeners() {
     const actionRadios = document.querySelectorAll('input[name="action"]');
 
     // SHOW OPERATOR ONLY FOR ARITHMETIC
-    actionRadios.forEach(radio => {
-        radio.addEventListener("change", () => {
-            const selectedAction = document.querySelector('input[name="action"]:checked').id;
-            toggleOperators(selectedAction === "arithmetic");
-            showResult("—", "");
-            // clear result box when switching action
-            //document.getElementById("resultText").textContent = "";
-        });
-    });
+    // actionRadios.forEach(radio => {
+    //     radio.addEventListener("change", () => {
+    //         const selectedAction = document.querySelector('input[name="action"]:checked').id;
+    //         toggleOperators(selectedAction === "arithmetic");
+    //         showResult("—", "");
+    //         // clear result box when switching action
+    //         //document.getElementById("resultText").textContent = "";
+    //     });
+    // });
 
     // TYPE CHANGE
     typeRadios.forEach(radio => {
@@ -80,10 +80,25 @@ function attachEventListeners() {
     const actionContainer = document.querySelector(".action-container");
 
     actionContainer.addEventListener("click", (e) => {
+
         const btn = e.target.closest(".action-btn");
         if (!btn) return;
 
+        //Get action from label "for" attribute
+        const actionId = btn.getAttribute("for"); // comparison / conversion / arithmetic
+
+        //Update radio (IMPORTANT for existing logic)
+        const radio = document.getElementById(actionId);
+        if (radio) radio.checked = true;
+
+        // Update UI active state
         setActive(actionContainer, btn, ".action-btn");
+
+        // Toggle operator row
+        toggleOperators(actionId === "arithmetic");
+
+        // Reset result
+        showResult("—", "");
     });
     const operatorContainer = document.querySelector(".operator-container");
 
@@ -271,11 +286,9 @@ async function loadHistory() {
         const div = document.createElement("div");
         div.className = "history-item";
 
-        div.innerHTML = `
-            <div style="padding:8px;border-bottom:1px solid #ccc">
-                <strong>${item.expression}</strong><br>
-                Result: ${item.result}
-            </div>
+       div.innerHTML = `
+            <strong>${item.expression}</strong><br>
+            Result: ${item.result}
         `;
 
         container.appendChild(div);
