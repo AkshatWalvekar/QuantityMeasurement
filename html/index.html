@@ -8,90 +8,90 @@
 
 <body>
 
-<div class="container">
+    <div class="container">
 
-    <header>
-        <h1>Welcome To Quantity Measurement</h1>
-    </header>
+        <header>
+            <h1>Welcome To Quantity Measurement</h1>
+        </header>
 
-    <h3>CHOOSE TYPE</h3>
+        <h3>CHOOSE TYPE</h3>
 
-    <div class="type-container">
+        <div class="type-container">
 
-        <input type="radio" name="type" id="length" checked>
-        <label for="length" class="card">
-            <img src="../images/length.png">
-            <p>Length</p>
-        </label>
+            <input type="radio" name="type" id="length" checked>
+            <label for="length" class="card">
+                <img src="../images/length.png">
+                <p>Length</p>
+            </label>
 
-        <input type="radio" name="type" id="weight">
-        <label for="weight" class="card">
-            <img src="../images/weight.png">
-            <p>Weight</p>
-        </label>
+            <input type="radio" name="type" id="weight">
+            <label for="weight" class="card">
+                <img src="../images/weight.png">
+                <p>Weight</p>
+            </label>
 
-        <input type="radio" name="type" id="temperature">
-        <label for="temperature" class="card">
-            <img src="../images/temperature.png">
-            <p>Temperature</p>
-        </label>
+            <input type="radio" name="type" id="temperature">
+            <label for="temperature" class="card">
+                <img src="../images/temperature.png">
+                <p>Temperature</p>
+            </label>
 
-        <input type="radio" name="type" id="volume">
-        <label for="volume" class="card">
-            <img src="../images/volume.png">
-            <p>Volume</p>
-        </label>
+            <input type="radio" name="type" id="volume">
+            <label for="volume" class="card">
+                <img src="../images/volume.png">
+                <p>Volume</p>
+            </label>
 
-    </div>
+        </div>
 
-    <h3>CHOOSE ACTION</h3>
+        <h3>CHOOSE ACTION</h3>
 
-    <div class="action-container">
+        <div class="action-container">
 
-        <input type="radio" name="action" id="comparison" checked>
-        <label for="comparison" class="action-btn">Comparison</label>
+            <input type="radio" name="action" id="comparison" checked>
+            <label for="comparison" class="action-btn">Comparison</label>
 
-        <input type="radio" name="action" id="conversion">
-        <label for="conversion" class="action-btn">Conversion</label>
+            <input type="radio" name="action" id="conversion">
+            <label for="conversion" class="action-btn">Conversion</label>
 
-        <input type="radio" name="action" id="arithmetic">
-        <label for="arithmetic" class="action-btn">Arithmetic</label>
+            <input type="radio" name="action" id="arithmetic">
+            <label for="arithmetic" class="action-btn">Arithmetic</label>
 
-    </div>
+        </div>
 
-    <!-- Arithmetic Operator -->
-    <div id="operatorRow" style="margin-top:10px; display:none;">
-        <select id="operator">
-            <option value="+">+</option>
-            <option value="-">-</option>
-            <option value="*">*</option>
-            <option value="/">/</option>
-        </select>
-    </div>
-
-    <!-- INPUT SECTION -->
-    <div class="input-section">
-
-        <div class="field">
-            <label>FROM</label>
-            <div class="box">
-                <input type="number" placeholder="Enter value">
-                <select></select>
+        <!-- Arithmetic Operator -->
+        <div id="operatorRow" style="margin-top:10px; display:none;">
+            <div class="operator-container">
+                <button class="op-btn">+</button>
+                <button class="op-btn">-</button>
+                <button class="op-btn">*</button>
+                <button class="op-btn">/</button>
             </div>
         </div>
 
-        <div class="field">
-            <label>TO</label>
-            <div class="box">
-                <input type="number" placeholder="Enter value">
-                <select></select>
+        <!-- INPUT SECTION -->
+        <div class="input-section">
+
+            <div class="field">
+                <label>FROM</label>
+                <div class="box">
+                    <input type="number" placeholder="Enter value">
+                    <select></select>
+                </div>
             </div>
+
+            <div class="field">
+                <label>TO</label>
+                <div class="box">
+                    <input type="number" placeholder="Enter value">
+                    <select></select>
+                </div>
+            </div>
+
         </div>
 
-    </div>
-
-    <!-- RESULT BOX (for arithmetic + comparison) -->
-    <div id="resultBox" style="
+        <!-- RESULT BOX (for arithmetic + comparison) -->
+        <div id="resultBox" style="
         margin-top:20px;
         padding:15px;
         border-radius:10px;
@@ -103,21 +103,21 @@
         text-align:center;
         display:none;
     ">
-        Result will appear here
-    </div>
+            Result will appear here
+        </div>
 
-    <!-- TEXT RESULT -->
-    <p id="resultText" style="
+        <!-- TEXT RESULT -->
+        <p id="resultText" style="
         margin-top:20px;
         font-size:18px;
         font-weight:bold;
         color:#2b50ed;
     "></p>
 
-    <!-- HISTORY SECTION (FIXED POSITION) -->
-    <h3 style="margin-top:30px;">History</h3>
+        <!-- HISTORY SECTION (FIXED POSITION) -->
+        <h3 style="margin-top:30px;">History</h3>
 
-    <div id="historyContainer" style="
+        <div id="historyContainer" style="
         margin-top:10px;
         padding:10px;
         border:1px solid #ddd;
@@ -126,12 +126,13 @@
         overflow-y:auto;
         background:#fafafa;
     ">
-        <p>No history yet.</p>
+            <p>No history yet.</p>
+        </div>
+
     </div>
 
-</div>
-
-<script type="module" src="../js/app.js"></script>
+    <script type="module" src="../js/app.js"></script>
 
 </body>
+
 </html>

@@ -3,6 +3,7 @@ import { convertValue } from "./conversion.js";
 import { getUnits, saveHistory, getHistory } from "./api.js";
 import { performArithmetic } from "./arithmetic.js";
 import { populateDropdown } from "./ui.js";
+import { setActive } from "./ui.js";
 
 let isUserTyping = false;
 let currentType = "Length";
@@ -72,6 +73,32 @@ function attachEventListeners() {
             if (lastResult !== "") toInput.value = lastResult;
         });
     });
+    const typeContainer = document.querySelector(".type-container");
+
+    typeContainer.addEventListener("click", (e) => {
+        const card = e.target.closest(".card");
+        if (!card) return;
+
+        setActive(typeContainer, card, ".card");
+    });
+    const actionContainer = document.querySelector(".action-container");
+
+    actionContainer.addEventListener("click", (e) => {
+        const btn = e.target.closest(".action-btn");
+        if (!btn) return;
+
+        setActive(actionContainer, btn, ".action-btn");
+    });
+    const operatorContainer = document.querySelector(".operator-container");
+
+    if (operatorContainer) {
+        operatorContainer.addEventListener("click", (e) => {
+            const btn = e.target.closest(".op-btn");
+            if (!btn) return;
+
+            setActive(operatorContainer, btn, ".op-btn");
+        });
+    }
 }
 
 // LOAD UNITS
@@ -154,7 +181,8 @@ async function handleConversion() {
 
     if (selectedAction === "arithmetic") {
 
-        const operator = document.getElementById("operator").value;
+        const activeOp = document.querySelector(".op-btn.active");
+        const operator = activeOp ? activeOp.textContent : "+";
 
         if (!Number.isFinite(v1) || !Number.isFinite(v2)) {
             resultText.textContent = "Enter both values";
@@ -176,7 +204,7 @@ async function handleConversion() {
         return;
     }
 
-   
+
 
     if (!Number.isFinite(v1)) return;
 
@@ -242,11 +270,16 @@ async function loadHistory() {
     container.innerHTML = "";
 
     history.forEach(item => {
-    const div = document.createElement("div");
-    div.className = "history-item";
+        const div = document.createElement("div");
+        div.className = "history-item";
 
-    div.textContent = `${item.expression} = ${item.result}`;
+        div.innerHTML = `
+            <div style="padding:8px;border-bottom:1px solid #ccc">
+                <strong>${item.expression}</strong><br>
+                Result: ${item.result}
+            </div>
+        `;
 
-    container.appendChild(div);
-});
+        container.appendChild(div);
+    });
 }

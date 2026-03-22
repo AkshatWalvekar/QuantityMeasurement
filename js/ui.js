@@ -29,3 +29,16 @@ export function populateDropdown(selectEl, units) {
         selectEl.appendChild(opt);
     });
 }
+export function setActive(parentEl, clickedEl, childSelector) {
+
+    // safety
+    if (!parentEl) return;
+
+    // remove active from all children
+    parentEl.querySelectorAll(childSelector).forEach(el => {
+        el.classList.remove("active");
+    });
+
+    // add active to clicked
+    clickedEl.classList.add("active");
+}
