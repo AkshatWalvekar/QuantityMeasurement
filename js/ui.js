@@ -78,3 +78,34 @@ export function toggleOperators(show) {
 
     el.style.display = show ? "flex" : "none";
 }
+export function renderHistory(records) {
+
+    const list = document.querySelector("#history-list");
+
+    if (!list) {
+        console.warn("history-list not found");
+        return;
+    }
+
+    // safety
+    if (!records) records = [];
+
+    list.innerHTML = "";
+
+    if (!records.length) {
+        list.innerHTML = "<li>No history yet.</li>";
+        return;
+    }
+
+    records.forEach(r => {
+        const li = document.createElement("li");
+
+        li.style.padding = "8px";
+        li.style.borderBottom = "1px solid #ddd";
+
+        li.textContent =
+            `${r.expression} = ${r.result} (${new Date(r.timestamp).toLocaleString()})`;
+
+        list.appendChild(li);
+    });
+}

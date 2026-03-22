@@ -6,6 +6,7 @@ import { populateDropdown } from "./ui.js";
 import { setActive } from "./ui.js";
 import { showResult } from "./ui.js";
 import { toggleOperators } from "./ui.js";
+import { renderHistory } from "./ui.js";
 
 let isUserTyping = false;
 let currentType = "Length";
@@ -248,36 +249,15 @@ function capitalize(text) {
 
 // HISTORY
 async function loadHistory() {
+    try {
+        const history = await getHistory();
 
-    const container = document.getElementById("historyContainer");
+        console.log("Loaded history:", history); // DEBUG
 
-    if (!container) {
-        console.error("historyContainer NOT FOUND ❌");
-        return;
+        renderHistory(history);
+
+    } catch (error) {
+        console.error("History load error:", error);
+        renderHistory([]); // fallback
     }
-
-    const history = await getHistory();
-
-    console.log("History Loaded:", history); // DEBUG
-
-    if (!history || history.length === 0) {
-        container.innerHTML = "<p>No history yet.</p>";
-        return;
-    }
-
-    container.innerHTML = "";
-
-    history.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "history-item";
-
-        div.innerHTML = `
-            <div style="padding:8px;border-bottom:1px solid #ccc">
-                <strong>${item.expression}</strong><br>
-                Result: ${item.result}
-            </div>
-        `;
-
-        container.appendChild(div);
-    });
 }

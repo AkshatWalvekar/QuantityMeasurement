@@ -133,4 +133,8 @@ letter-spacing:1px;
 }
 #operator-selector {
     transition: all 0.3s ease;
+    #history-list li:hover {
+    background: #eef2ff;
+    cursor: pointer;
+}
 }
