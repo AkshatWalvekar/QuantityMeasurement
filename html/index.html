@@ -57,6 +57,14 @@
             <label for="arithmetic" class="action-btn">Arithmetic</label>
 
         </div>
+        <div id="operatorRow" style="margin-top:10px; display:none;">
+            <select id="operator">
+                <option value="+">+</option>
+                <option value="-">-</option>
+                <option value="*">*</option>
+                <option value="/">/</option>
+            </select>
+        </div>
 
         <div class="input-section">
 
@@ -87,8 +95,22 @@
                     </select>
                 </div>
             </div>
-            
 
+
+        </div>
+        <div id="resultBox" style="
+    margin-top:20px;
+    padding:15px;
+    border-radius:10px;
+    background:#f5f7ff;
+    border:1px solid #dbe1ff;
+    font-size:18px;
+    font-weight:600;
+    color:#2b50ed;
+    text-align:center;
+    display:none;
+">
+            Result will appear here
         </div>
         <p id="resultText" style="
             margin-top:20px;

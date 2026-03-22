@@ -1,11 +1,12 @@
 import { compareValues } from "./tempcomparison.js";
 import { convertValue } from "./conversion.js";
 import { getUnits, saveHistory, getHistory } from "./api.js";
+import { performArithmetic } from "./arithmetic.js";
 
 let isUserTyping = false;
 let currentType = "Length";
 let lastResult = "";
-let lastValue = "";   // NEW (store input)
+let lastValue = "";
 let isLoadingUnits = false;
 
 // INIT
@@ -13,7 +14,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     attachEventListeners();
     await loadUnits(currentType);
     loadHistory();
-
 });
 
 // EVENTS
@@ -22,20 +22,37 @@ function attachEventListeners() {
     const fromInput = document.querySelectorAll(".box input")[0];
     const toInput = document.querySelectorAll(".box input")[1];
 
-    // FROM input (already there)
     fromInput.addEventListener("input", () => {
         isUserTyping = true;
         lastValue = fromInput.value;
         handleConversion();
     });
 
-   
     toInput.addEventListener("input", () => {
         handleConversion();
     });
 
     const typeRadios = document.querySelectorAll('input[name="type"]');
+    const actionRadios = document.querySelectorAll('input[name="action"]');
 
+    // SHOW OPERATOR ONLY FOR ARITHMETIC
+    actionRadios.forEach(radio => {
+        radio.addEventListener("change", () => {
+            const selectedAction = document.querySelector('input[name="action"]:checked').id;
+            const operatorRow = document.getElementById("operatorRow");
+
+            if (selectedAction === "arithmetic") {
+                operatorRow.style.display = "block";
+            } else {
+                operatorRow.style.display = "none";
+            }
+
+            // clear result box when switching action
+            document.getElementById("resultText").textContent = "";
+        });
+    });
+
+    // TYPE CHANGE
     typeRadios.forEach(radio => {
         radio.addEventListener("change", async (e) => {
 
@@ -47,17 +64,11 @@ function attachEventListeners() {
 
             await loadUnits(selectedType);
 
-            // restore values
             const fromInput = document.querySelectorAll(".box input")[0];
             const toInput = document.querySelectorAll(".box input")[1];
 
-            if (lastValue !== "") {
-                fromInput.value = lastValue;
-            }
-
-            if (lastResult !== "") {
-                toInput.value = lastResult;
-            }
+            if (lastValue !== "") fromInput.value = lastValue;
+            if (lastResult !== "") toInput.value = lastResult;
         });
     });
 }
@@ -77,7 +88,7 @@ async function loadUnits(type) {
 
     const selects = document.querySelectorAll(".box select");
 
-    selects.forEach((select) => {
+    selects.forEach(select => {
         select.innerHTML = "";
 
         units.forEach(unit => {
@@ -91,7 +102,7 @@ async function loadUnits(type) {
     isLoadingUnits = false;
 }
 
-// CONVERSION
+// MAIN LOGIC
 async function handleConversion() {
 
     if (isLoadingUnits) return;
@@ -102,10 +113,10 @@ async function handleConversion() {
     const fromSelect = document.querySelectorAll(".box select")[0];
     const toSelect = document.querySelectorAll(".box select")[1];
 
+    const resultText = document.getElementById("resultText");
+
     const selectedAction = document.querySelector('input[name="action"]:checked').id;
-    const selectedType = capitalize(
-        document.querySelector('input[name="type"]:checked').id
-    );
+    const selectedType = capitalize(document.querySelector('input[name="type"]:checked').id);
 
     const fromUnit = fromSelect.value;
     const toUnit = toSelect.value;
@@ -113,14 +124,14 @@ async function handleConversion() {
     const v1 = parseFloat(fromInput.value);
     const v2 = parseFloat(toInput.value);
 
-    // STOP if empty
     if (!fromUnit || !toUnit) return;
 
 
     if (selectedAction === "comparison") {
 
         if (!Number.isFinite(v1) || !Number.isFinite(v2)) {
-            return; // wait until both values entered
+            resultText.textContent = "Enter both values";
+            return;
         }
 
         const baseUnitMap = {
@@ -137,40 +148,58 @@ async function handleConversion() {
 
         const result = compareValues(v1, fromUnit, v2, toUnit, base1, base2);
 
-        // SHOW RESULT (do NOT overwrite inputs)
-        document.getElementById("resultText").textContent = result;
-
-        return; 
-    }
-
-    
-    const value = parseFloat(fromInput.value);
-
-    if (isNaN(value)) {
-        if (lastResult !== "") {
-            toInput.value = lastResult;
-        }
+        resultText.textContent = result;
         return;
     }
 
-    const result = await convertValue(value, fromUnit, toUnit);
+    if (selectedAction === "arithmetic") {
+
+        const operator = document.getElementById("operator").value;
+
+        if (!Number.isFinite(v1) || !Number.isFinite(v2)) {
+            resultText.textContent = "Enter both values";
+            return;
+        }
+
+        const v2normalised = await convertValue(v2, toUnit, fromUnit);
+
+        try {
+            const result = performArithmetic(v1, v2normalised, operator);
+
+            resultText.textContent =
+                `${v1} ${fromUnit} ${operator} ${v2} ${toUnit} = ${result} ${fromUnit}`;
+
+        } catch (error) {
+            resultText.textContent = error.message;
+        }
+
+        return;
+    }
+
+   
+
+    if (!Number.isFinite(v1)) return;
+
+    const result = await convertValue(v1, fromUnit, toUnit);
 
     if (result !== null) {
 
         const finalResult = parseFloat(result.toFixed(4));
 
         lastResult = finalResult;
-        lastValue = value;
+        lastValue = v1;
 
-        // show result
         toInput.value = finalResult;
+
+        // hide result text (only for conversion)
+        resultText.textContent = "";
 
         if (!isUserTyping) return;
 
         const record = {
             type: selectedType,
             action: capitalize(selectedAction),
-            expression: `${value} ${fromUnit} → ${toUnit}`,
+            expression: `${v1} ${fromUnit} → ${toUnit}`,
             result: finalResult,
             timestamp: new Date().toISOString()
         };
@@ -179,21 +208,23 @@ async function handleConversion() {
             await saveHistory(record);
             loadHistory();
         } catch (error) {
-            console.error("History save failed:", error);
+            console.error(error);
         }
 
         isUserTyping = false;
     }
 }
+
 // HELPER
 function capitalize(text) {
     return text.charAt(0).toUpperCase() + text.slice(1);
 }
+
+// HISTORY
 async function loadHistory() {
 
     const container = document.getElementById("historyContainer");
-
-    if (!container) return; // safety
+    if (!container) return;
 
     const history = await getHistory();
 
