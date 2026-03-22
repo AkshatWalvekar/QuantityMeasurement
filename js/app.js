@@ -5,6 +5,7 @@ import { performArithmetic } from "./arithmetic.js";
 import { populateDropdown } from "./ui.js";
 import { setActive } from "./ui.js";
 import { showResult } from "./ui.js";
+import { toggleOperators } from "./ui.js";
 
 let isUserTyping = false;
 let currentType = "Length";
@@ -42,16 +43,10 @@ function attachEventListeners() {
     actionRadios.forEach(radio => {
         radio.addEventListener("change", () => {
             const selectedAction = document.querySelector('input[name="action"]:checked').id;
-            const operatorRow = document.getElementById("operatorRow");
-
-            if (selectedAction === "arithmetic") {
-                operatorRow.style.display = "block";
-            } else {
-                operatorRow.style.display = "none";
-            }
-
+            toggleOperators(selectedAction === "arithmetic");
+            showResult("—", "");
             // clear result box when switching action
-            document.getElementById("resultText").textContent = "";
+            //document.getElementById("resultText").textContent = "";
         });
     });
 

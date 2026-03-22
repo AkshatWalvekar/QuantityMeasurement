@@ -131,3 +131,6 @@ letter-spacing:1px;
     background-color: #ffeaa7;
     transition: background 0.3s ease;
 }
+#operator-selector {
+    transition: all 0.3s ease;
+}
