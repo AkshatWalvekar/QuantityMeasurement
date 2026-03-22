@@ -4,6 +4,7 @@ import { getUnits, saveHistory, getHistory } from "./api.js";
 import { performArithmetic } from "./arithmetic.js";
 import { populateDropdown } from "./ui.js";
 import { setActive } from "./ui.js";
+import { showResult } from "./ui.js";
 
 let isUserTyping = false;
 let currentType = "Length";
@@ -175,7 +176,7 @@ async function handleConversion() {
 
         const result = compareValues(v1, fromUnit, v2, toUnit, base1, base2);
 
-        resultText.textContent = result;
+        showResult(result, "");;
         return;
     }
 
@@ -194,8 +195,10 @@ async function handleConversion() {
         try {
             const result = performArithmetic(v1, v2normalised, operator);
 
-            resultText.textContent =
-                `${v1} ${fromUnit} ${operator} ${v2} ${toUnit} = ${result} ${fromUnit}`;
+            showResult(
+                `${v1} ${fromUnit} ${operator} ${v2} ${toUnit} = ${result}`,
+                fromUnit
+            );
 
         } catch (error) {
             resultText.textContent = error.message;

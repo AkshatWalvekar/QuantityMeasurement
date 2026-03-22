@@ -90,34 +90,25 @@
 
         </div>
 
-        <!-- RESULT BOX (for arithmetic + comparison) -->
-        <div id="resultBox" style="
-        margin-top:20px;
-        padding:15px;
-        border-radius:10px;
-        background:#f5f7ff;
-        border:1px solid #dbe1ff;
-        font-size:18px;
-        font-weight:600;
-        color:#2b50ed;
-        text-align:center;
-        display:none;
-    ">
-            Result will appear here
-        </div>
+        <<div id="resultPanel" style="
+    margin-top:20px;
+    padding:15px;
+    border-radius:10px;
+    background:#f5f7ff;
+    border:1px solid #dbe1ff;
+    text-align:center;
+    font-size:20px;
+    font-weight:bold;
+    color:#2b50ed;
+">
+            <span id="result-value">—</span>
+            <span id="result-unit"></span>
+    </div>
 
-        <!-- TEXT RESULT -->
-        <p id="resultText" style="
-        margin-top:20px;
-        font-size:18px;
-        font-weight:bold;
-        color:#2b50ed;
-    "></p>
+    <!-- HISTORY SECTION (FIXED POSITION) -->
+    <h3 style="margin-top:30px;">History</h3>
 
-        <!-- HISTORY SECTION (FIXED POSITION) -->
-        <h3 style="margin-top:30px;">History</h3>
-
-        <div id="historyContainer" style="
+    <div id="historyContainer" style="
         margin-top:10px;
         padding:10px;
         border:1px solid #ddd;
@@ -126,8 +117,8 @@
         overflow-y:auto;
         background:#fafafa;
     ">
-            <p>No history yet.</p>
-        </div>
+        <p>No history yet.</p>
+    </div>
 
     </div>
 

@@ -127,3 +127,7 @@ letter-spacing:1px;
     color: white !important;
     border-color: #2b50ed !important;
 }
+.highlight {
+    background-color: #ffeaa7;
+    transition: background 0.3s ease;
+}

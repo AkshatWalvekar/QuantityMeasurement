@@ -42,3 +42,28 @@ export function setActive(parentEl, clickedEl, childSelector) {
     // add active to clicked
     clickedEl.classList.add("active");
 }
+// UC-JS-12: Show Result
+export function showResult(value, unitSymbol) {
+
+    const valueEl = document.querySelector("#result-value");
+    const unitEl = document.querySelector("#result-unit");
+
+    if (!valueEl || !unitEl) return;
+
+    // handle null
+    if (value === null || value === undefined) {
+        valueEl.textContent = "—";
+        unitEl.textContent = "";
+        return;
+    }
+
+    valueEl.textContent = value;
+    unitEl.textContent = unitSymbol || "";
+
+    // highlight animation
+    valueEl.classList.add("highlight");
+
+    setTimeout(() => {
+        valueEl.classList.remove("highlight");
+    }, 1500);
+}
