@@ -1,157 +1,170 @@
-import { getUnits, getConversion, saveHistory, getHistory } from "./api.js";
+import { convertValue } from "./conversion.js";
+import { getUnits, saveHistory, getHistory } from "./api.js";
 
+let isUserTyping = false;
 let currentType = "Length";
-let lastSaved = "";
+let lastResult = "";
+let lastValue = "";   // NEW (store input)
+let isLoadingUnits = false;
 
+// INIT
 document.addEventListener("DOMContentLoaded", async () => {
     attachEventListeners();
     await loadUnits(currentType);
-    await loadHistory();
+    loadHistory();
+    
 });
 
 // EVENTS
 function attachEventListeners() {
 
-    // TYPE SWITCH
-    document.querySelectorAll('input[name="type"]').forEach(radio => {
+    const fromInput = document.querySelectorAll(".box input")[0];
+
+    fromInput.addEventListener("input", () => {
+        isUserTyping = true;
+        lastValue = fromInput.value;   // store value
+        handleConversion();
+    });
+
+    const typeRadios = document.querySelectorAll('input[name="type"]');
+
+    typeRadios.forEach(radio => {
         radio.addEventListener("change", async (e) => {
 
-            currentType = capitalize(e.target.id);
+            const selectedType = capitalize(e.target.id);
 
-            await loadUnits(currentType);
+            if (selectedType === currentType) return;
 
-            setSelectedType(currentType);
+            currentType = selectedType;
 
-            const inputs = document.querySelectorAll(".box input");
-            inputs[0].value = 1;
-            inputs[1].value = "";
-        });
-    });
+            await loadUnits(selectedType);
 
-    // ACTION SWITCH
-    document.querySelectorAll('input[name="action"]').forEach(radio => {
-        radio.addEventListener("change", (e) => {
-            if (e.target.id !== "conversion") {
-                alert("Only Conversion implemented");
+            // RESTORE VALUE + RESULT AFTER UI CHANGE
+            const fromInput = document.querySelectorAll(".box input")[0];
+            const toInput = document.querySelectorAll(".box input")[1];
+
+            if (lastValue !== "") {
+                fromInput.value = lastValue;
+            }
+
+            if (lastResult !== "") {
+                toInput.value = lastResult;
             }
         });
-    });
-
-    const inputs = document.querySelectorAll(".box input");
-
-    inputs[0].addEventListener("input", performConversion);
-
-    document.querySelectorAll(".box select").forEach(s => {
-        s.addEventListener("change", performConversion);
     });
 }
 
 // LOAD UNITS
 async function loadUnits(type) {
+
+    isLoadingUnits = true;
+
     const units = await getUnits(type);
 
-    const selects = document.querySelectorAll(".box select");
-
-    selects.forEach(select => {
-        select.innerHTML = "";
-
-        units.forEach(u => {
-            const opt = document.createElement("option");
-            opt.value = u.symbol;
-            opt.textContent = u.label;
-            select.appendChild(opt);
-        });
-    });
-
-    setSelectedType(type);
-}
-
-// CONVERSION + SAVE
-async function performConversion() {
-    try {
-        const inputs = document.querySelectorAll(".box input");
-        const selects = document.querySelectorAll(".box select");
-
-        const value = parseFloat(inputs[0].value);
-        const from = selects[0].value;
-        const to = selects[1].value;
-
-        if (!from || !to || isNaN(value)) return;
-
-        let result;
-
-        if (from === to) {
-            result = value;
-        } else {
-            const conv = await getConversion(from, to);
-
-            if (conv.factor !== null) {
-                result = value * conv.factor;
-            } else {
-                const x = value;
-                result = Function("x", `return ${conv.formula}`)(x);
-            }
-        }
-
-        inputs[1].value = result;
-
-        const key = `${value}-${from}-${to}-${result}`;
-        if (key === lastSaved) return;
-
-        lastSaved = key;
-
-        await saveHistory({
-            type: currentType,
-            action: "Conversion",
-            expression: `${value} ${from} → ${to}`,
-            result: result,
-            timestamp: new Date().toISOString()
-        });
-
-        loadHistory(); // refresh UI
-
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-// LOAD HISTORY
-async function loadHistory() {
-    try{
-    const history = await getHistory();
-
-    console.log("History:",history);
-
-    const list = document.getElementById("history-list");
-    const empty = document.getElementById("no-history");
-
-    if(!list||!empty)return;
-
-    list.innerHTML = "";
-
-    if (!history.length) {
-        empty.style.display = "block";
+    if (!units || units.length === 0) {
+        alert("No units found");
+        isLoadingUnits = false;
         return;
     }
 
-    empty.style.display = "none";
+    const selects = document.querySelectorAll(".box select");
 
-    history.reverse().forEach(item => {
-        const li = document.createElement("li");
-        li.textContent = `${item.expression} = ${item.result}`;
-        list.appendChild(li);
+    selects.forEach((select) => {
+        select.innerHTML = "";
+
+        units.forEach(unit => {
+            const option = document.createElement("option");
+            option.value = unit.symbol;
+            option.textContent = unit.label;
+            select.appendChild(option);
+        });
     });
-}catch(err){
-    console.error("Load History Error;",err);
-}
+
+    isLoadingUnits = false;
 }
 
-// HELPERS
-function setSelectedType(type) {
-    const radio = document.getElementById(type.toLowerCase());
-    if (radio) radio.checked = true;
+// CONVERSION
+async function handleConversion() {
+
+    if (isLoadingUnits) return;
+
+    const fromInput = document.querySelectorAll(".box input")[0];
+    const toInput = document.querySelectorAll(".box input")[1];
+
+    const fromSelect = document.querySelectorAll(".box select")[0];
+    const toSelect = document.querySelectorAll(".box select")[1];
+
+    const value = parseFloat(fromInput.value);
+    const fromUnit = fromSelect.value;
+    const toUnit = toSelect.value;
+
+    if (isNaN(value) || !fromUnit || !toUnit) {
+        if (lastResult !== "") {
+            toInput.value = lastResult;
+        }
+        return;
+    }
+
+    const result = await convertValue(value, fromUnit, toUnit);
+
+    if (result !== null) {
+
+        const finalResult = parseFloat(result.toFixed(4));
+
+        // store values
+        lastResult = finalResult;
+        lastValue = value;
+
+        // show result
+        toInput.value = finalResult;
+
+        if (!isUserTyping) return;
+
+        const selectedType = document.querySelector('input[name="type"]:checked').id;
+        const selectedAction = document.querySelector('input[name="action"]:checked').id;
+
+        const record = {
+            type: capitalize(selectedType),
+            action: capitalize(selectedAction),
+            expression: `${value} ${fromUnit} → ${toUnit}`,
+            result: finalResult,
+            timestamp: new Date().toISOString()
+        };
+
+        try {
+            await saveHistory(record);
+            loadHistory(); // refresh history after save
+        } catch (error) {
+            console.error("History save failed:", error);
+        }
+
+        isUserTyping = false;
+    }
 }
 
-function capitalize(t) {
-    return t.charAt(0).toUpperCase() + t.slice(1);
+// HELPER
+function capitalize(text) {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+}
+async function loadHistory() {
+
+    const container = document.getElementById("historyContainer");
+
+    if (!container) return; // safety
+
+    const history = await getHistory();
+
+    if (!history || history.length === 0) {
+        container.innerHTML = "<p>No history yet.</p>";
+        return;
+    }
+
+    container.innerHTML = "";
+
+    history.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "history-item";
+        div.textContent = `${item.expression} = ${item.result}`;
+        container.appendChild(div);
+    });
 }

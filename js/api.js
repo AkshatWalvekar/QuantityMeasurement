@@ -1,47 +1,87 @@
 const BASE_URL = "http://localhost:3000";
 
-// UC3
 export async function getUnits(type) {
     try {
         const res = await fetch(`${BASE_URL}/units?type=${type}`);
-        if (!res.ok) throw new Error();
+
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+
         return await res.json();
-    } catch {
+
+    } catch (error) {
+        console.error("API Error (getUnits):", error);
         return [];
     }
 }
 
-// UC4
+
 export async function getConversion(from, to) {
-    const res = await fetch(`${BASE_URL}/conversions?from=${from}&to=${to}`);
-    const data = await res.json();
+    try {
 
-    if (!data.length) throw new Error("No conversion");
+        // SAME UNIT CASE
+        if (from === to) {
+            return {
+                from,
+                to,
+                factor: 1,
+                formula: null
+            };
+        }
 
-    return data[0];
+        const res = await fetch(
+            `${BASE_URL}/conversions?from=${from}&to=${to}`
+        );
+
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+
+        const data = await res.json(); // always array
+
+        if (!data.length) {
+            throw new Error("No conversion found");
+        }
+
+        return data[0];
+
+    } catch (error) {
+        console.error("API Error (getConversion):", error);
+        throw error;
+    }
 }
-
-// UC5
 export async function saveHistory(record) {
     try {
-        await fetch(`${BASE_URL}/history`, {
+        const res = await fetch(`${BASE_URL}/history`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify(record)
         });
-    } catch {
-        console.error("Save failed");
+
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+
+        return await res.json();
+    } catch (error) {
+        console.error("Failed to save history:", error);
     }
 }
-
-// UC6
 export async function getHistory() {
     try {
-        const res = await fetch("http://localhost:3000/history");
+        const res = await fetch(`${BASE_URL}/history?_sort=timestamp&_order=desc`);
+
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+
         return await res.json();
 
-    } catch (err){
-        console.error("History Fetch failed",err);
-        return [];
+    } catch (error) {
+        console.error("History Load Failed:", error);
+        return []; // as per use case
     }
 }
