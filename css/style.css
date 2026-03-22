@@ -54,7 +54,7 @@ input[type="radio"] {
     margin-bottom: 10px;
 }
 
-input:checked+.card {
+input:checked + .card {
     border-color: #2ecc71;
     background: #f6fffa;
 }
@@ -74,7 +74,7 @@ input:checked+.card {
     cursor: pointer;
 }
 
-input:checked+.action-btn {
+input:checked + .action-btn {
     background: #2b50ed;
     color: white;
 }
