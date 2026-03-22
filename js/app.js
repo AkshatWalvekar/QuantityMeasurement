@@ -1,3 +1,4 @@
+import { compareValues } from "./tempcomparison.js";
 import { convertValue } from "./conversion.js";
 import { getUnits, saveHistory, getHistory } from "./api.js";
 
@@ -12,17 +13,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     attachEventListeners();
     await loadUnits(currentType);
     loadHistory();
-    
+
 });
 
 // EVENTS
 function attachEventListeners() {
 
     const fromInput = document.querySelectorAll(".box input")[0];
+    const toInput = document.querySelectorAll(".box input")[1];
 
+    // FROM input (already there)
     fromInput.addEventListener("input", () => {
         isUserTyping = true;
-        lastValue = fromInput.value;   // store value
+        lastValue = fromInput.value;
+        handleConversion();
+    });
+
+   
+    toInput.addEventListener("input", () => {
         handleConversion();
     });
 
@@ -39,7 +47,7 @@ function attachEventListeners() {
 
             await loadUnits(selectedType);
 
-            // RESTORE VALUE + RESULT AFTER UI CHANGE
+            // restore values
             const fromInput = document.querySelectorAll(".box input")[0];
             const toInput = document.querySelectorAll(".box input")[1];
 
@@ -94,11 +102,51 @@ async function handleConversion() {
     const fromSelect = document.querySelectorAll(".box select")[0];
     const toSelect = document.querySelectorAll(".box select")[1];
 
-    const value = parseFloat(fromInput.value);
+    const selectedAction = document.querySelector('input[name="action"]:checked').id;
+    const selectedType = capitalize(
+        document.querySelector('input[name="type"]:checked').id
+    );
+
     const fromUnit = fromSelect.value;
     const toUnit = toSelect.value;
 
-    if (isNaN(value) || !fromUnit || !toUnit) {
+    const v1 = parseFloat(fromInput.value);
+    const v2 = parseFloat(toInput.value);
+
+    // STOP if empty
+    if (!fromUnit || !toUnit) return;
+
+
+    if (selectedAction === "comparison") {
+
+        if (!Number.isFinite(v1) || !Number.isFinite(v2)) {
+            return; // wait until both values entered
+        }
+
+        const baseUnitMap = {
+            Length: "m",
+            Weight: "kg",
+            Temperature: "C",
+            Volume: "L"
+        };
+
+        const baseUnit = baseUnitMap[selectedType];
+
+        const base1 = await convertValue(v1, fromUnit, baseUnit);
+        const base2 = await convertValue(v2, toUnit, baseUnit);
+
+        const result = compareValues(v1, fromUnit, v2, toUnit, base1, base2);
+
+        // SHOW RESULT (do NOT overwrite inputs)
+        document.getElementById("resultText").textContent = result;
+
+        return; 
+    }
+
+    
+    const value = parseFloat(fromInput.value);
+
+    if (isNaN(value)) {
         if (lastResult !== "") {
             toInput.value = lastResult;
         }
@@ -111,7 +159,6 @@ async function handleConversion() {
 
         const finalResult = parseFloat(result.toFixed(4));
 
-        // store values
         lastResult = finalResult;
         lastValue = value;
 
@@ -120,11 +167,8 @@ async function handleConversion() {
 
         if (!isUserTyping) return;
 
-        const selectedType = document.querySelector('input[name="type"]:checked').id;
-        const selectedAction = document.querySelector('input[name="action"]:checked').id;
-
         const record = {
-            type: capitalize(selectedType),
+            type: selectedType,
             action: capitalize(selectedAction),
             expression: `${value} ${fromUnit} → ${toUnit}`,
             result: finalResult,
@@ -133,7 +177,7 @@ async function handleConversion() {
 
         try {
             await saveHistory(record);
-            loadHistory(); // refresh history after save
+            loadHistory();
         } catch (error) {
             console.error("History save failed:", error);
         }
@@ -141,7 +185,6 @@ async function handleConversion() {
         isUserTyping = false;
     }
 }
-
 // HELPER
 function capitalize(text) {
     return text.charAt(0).toUpperCase() + text.slice(1);
